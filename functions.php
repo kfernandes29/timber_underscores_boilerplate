@@ -11,7 +11,7 @@
 /**
  * If you are installing Timber as a Composer dependency in your theme, you'll need this block
  * to load your dependencies and initialize Timber. If you are using Timber via the WordPress.org
- * plug-in, you can safely delete this block. 
+ * plug-in, you can safely delete this block.
  */
 $composer_autoload = __DIR__ . '/vendor/autoload.php';
 if ( file_exists($composer_autoload) ) {
@@ -59,8 +59,21 @@ class StarterSite extends Timber\Site {
 		add_filter( 'timber/twig', array( $this, 'add_to_twig' ) );
 		add_action( 'init', array( $this, 'register_post_types' ) );
 		add_action( 'init', array( $this, 'register_taxonomies' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 		parent::__construct();
 	}
+
+	public function enqueue_scripts_styles() {
+
+		wp_enqueue_style( 'bootstrap', get_template_directory_uri() . '/node_modules/bootstrap/dist/css/bootstrap.min.css' );
+		wp_enqueue_style( 'fontawesome', get_template_directory_uri() . '/node_modules/@fortawesome/fontawesome-free/css/fontawesome.min.css' );
+		wp_enqueue_style( 'site', get_template_directory_uri() . '/style.css', array( 'bootstrap', 'fontawesome' ) );
+
+		wp_enqueue_script( 'jquery', get_template_directory_uri() . '/node_modules/jquery/dist/jquery.min.js', false, false, true );
+		wp_enqueue_script( 'bootstrap', get_template_directory_uri() . '/node_modules/bootstrap/dist/js/bootstrap.min.js', array( 'jquery' ), false, true );
+
+	}
+
 	/** This is where you can register custom post types. */
 	public function register_post_types() {
 
@@ -75,9 +88,6 @@ class StarterSite extends Timber\Site {
 	 * @param string $context context['this'] Being the Twig's {{ this }}.
 	 */
 	public function add_to_context( $context ) {
-		$context['foo'] = 'bar';
-		$context['stuff'] = 'I am a value set in your functions.php file';
-		$context['notes'] = 'These values are available everytime you call Timber::context();';
 		$context['menu'] = new Timber\Menu();
 		$context['site'] = $this;
 		return $context;
@@ -135,22 +145,12 @@ class StarterSite extends Timber\Site {
 		add_theme_support( 'menus' );
 	}
 
-	/** This Would return 'foo bar!'.
-	 *
-	 * @param string $text being 'foo', then returned 'foo bar!'.
-	 */
-	public function myfoo( $text ) {
-		$text .= ' bar!';
-		return $text;
-	}
-
 	/** This is where you can add your own functions to twig.
 	 *
 	 * @param string $twig get extension.
 	 */
 	public function add_to_twig( $twig ) {
 		$twig->addExtension( new Twig_Extension_StringLoader() );
-		$twig->addFilter( new Twig_SimpleFilter( 'myfoo', array( $this, 'myfoo' ) ) );
 		return $twig;
 	}
 
